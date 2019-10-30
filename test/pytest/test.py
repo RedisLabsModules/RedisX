@@ -76,5 +76,21 @@ class RedisXTestCase(BaseModuleTestCase):
             self.assertEquals('abc', r.execute_command('x.getsetex', 'key1', 'def', 250))
             self.assertEquals(250L, r.execute_command('ttl', 'key1'))
 
+    def testGetSetEX(self):
+        """Test X.GETDEL """
+        with self.redis() as r:
+            r.client_setname(self._testMethodName)
+            r.flushdb()
+
+            with self.assertRaises(redis.exceptions.ResponseError):
+                r.execute_command('x.getdel', 'key', 'value')
+
+            self.assertEquals('OK', r.execute_command('set', 'key1', 'abc'))
+            self.assertEquals('abc', r.execute_command('x.getdel', 'key1'))
+            self.assertEquals(None, r.execute_command('x.getdel', 'key1'))
+            self.assertEquals(None, r.execute_command('get', 'key1'))
+
+            
+
 if __name__ == '__main__':
     unittest.main()

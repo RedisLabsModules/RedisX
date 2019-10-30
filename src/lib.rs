@@ -84,6 +84,30 @@ fn getex(ctx: &Context, args: Vec<String>) -> RedisResult {
     Ok(res)
 }
 
+///
+/// X.GETDEL <key>
+///
+fn getdel(ctx: &Context, args: Vec<String>) -> RedisResult {
+    if args.len() > 2 {
+        return Err(RedisError::WrongArity);
+    }
+
+    let mut args = args.into_iter().skip(1);
+    let key = args.next_string()?;
+
+    let redis_key = ctx.open_key_writable(&key);
+    let res = if redis_key.is_empty() {
+        ().into()
+    } else {
+        let v = redis_key.read()?.unwrap(); // read on writeable always returns Some
+        redis_key.delete()?;
+        ctx.replicate_verbatim();
+        v.into()
+    };
+
+    Ok(res)
+}
+
 redis_module! {
     name: "redisx",
     version: 999999,
@@ -92,5 +116,6 @@ redis_module! {
         ["x.prepend", prepend, "write deny-oom"],
         ["x.getsetex", getsetex, "write deny-oom"],
         ["x.getex", getex, "write"],
+        ["x.getdel", getdel, "write"],
     ],
 }
