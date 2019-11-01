@@ -4,6 +4,22 @@
 # RedisX
 Extension modules to Redis' native data types and commands
 
+
+# Getting Started
+
+## Build
+
+```bash
+git clone https://github.com/RedisLabsModules/RedisX.git
+cd RedisX
+cargo build --release
+```
+
+## Run 
+```
+redis-server --loadmodule ./target/release/libredisx.so
+```
+
 # Commands
 
 ## X.GETSETEX key value seconds
