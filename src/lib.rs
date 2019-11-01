@@ -1,8 +1,7 @@
 #[macro_use]
-extern crate redismodule;
+extern crate redis_module;
 
-use redismodule::NextArg;
-use redismodule::{Context, RedisError, RedisResult};
+use redis_module::{Context, NextArg, RedisError, RedisResult};
 
 use std::time::Duration;
 use std::usize;
@@ -11,7 +10,6 @@ use std::usize;
 /// X.PREPEND <key> <value>
 ///
 fn prepend(ctx: &Context, args: Vec<String>) -> RedisResult {
-
     if args.len() > 3 {
         return Err(RedisError::WrongArity);
     }
@@ -31,10 +29,9 @@ fn prepend(ctx: &Context, args: Vec<String>) -> RedisResult {
 }
 
 ///
-/// X.GETSETEX <key> <value> <seconds> 
+/// X.GETSETEX <key> <value> <seconds>
 ///
 fn getsetex(ctx: &Context, args: Vec<String>) -> RedisResult {
-
     if args.len() > 4 {
         return Err(RedisError::WrongArity);
     }
