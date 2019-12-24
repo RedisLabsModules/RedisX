@@ -105,6 +105,57 @@ fn getdel(ctx: &Context, args: Vec<String>) -> RedisResult {
     Ok(res)
 }
 
+///
+/// X.INCRBYEX <key> <increment> <seconds>
+///
+fn incrbyex(ctx: &Context, args: Vec<String>) -> RedisResult {
+    if args.len() > 4 {
+        return Err(RedisError::WrongArity);
+    }
+
+    let mut args = args.into_iter().skip(1);
+    let key = args.next_string()?;
+    let increment = args.next_string()?;
+    let seconds = args.next_u64()?;
+
+    let res = ctx.call("INCRBY", &[&key, &increment])?;
+    let redis_key = ctx.open_key_writable(&key);
+    redis_key.set_expire(Duration::from_secs(seconds))?;
+    
+    ctx.replicate_verbatim();
+
+    Ok(res)
+}
+
+///
+/// X.HAPPEND <key> <field> <value>
+///
+fn happend(ctx: &Context, args: Vec<String>) -> RedisResult {
+    if args.len() > 4 {
+        return Err(RedisError::WrongArity);
+    }
+
+    let mut args = args.into_iter().skip(1);
+    let key = args.next_string()?;
+    let field = args.next_string()?;
+    let value = args.next_string()?;
+
+    let redis_key = ctx.open_key_writable(&key);
+    let curr_value = redis_key.hash_get(&field)?;
+    let res = if let Some(mut val) = curr_value {
+        val.append(&value);
+        val
+    } else {
+        ctx.create_string(&value)
+    };
+    let len = res.len();
+    redis_key.hash_set(&field, res);
+
+    ctx.replicate_verbatim();
+
+    Ok(len.into())
+}
+
 redis_module! {
     name: "redisx",
     version: 999999,
@@ -114,5 +165,7 @@ redis_module! {
         ["x.getsetex", getsetex, "write deny-oom"],
         ["x.getex", getex, "write"],
         ["x.getdel", getdel, "write"],
+        ["x.incrbyex", incrbyex, "write"],
+        ["x.happend", happend, "write"],
     ],
 }
