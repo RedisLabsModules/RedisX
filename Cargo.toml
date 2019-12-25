@@ -7,4 +7,4 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
-redis-module = { git="https://github.com/RedisLabsModules/redismodule-rs.git", branch="hash_get_set", features = ["experimental-api"]}
+redis-module = { version="0.6.0", features = ["experimental-api"]}
